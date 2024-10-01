@@ -9,6 +9,9 @@ public class PlayerController : MonoBehaviour
 	private Vector2 input;
 	private Animator animator;
 	private Rigidbody2D rigidbody2D;
+	public LayerMask solidObjectsLayer;
+
+	[SerializeField] private float m_CollisionRadius = 0.2f;
 
 	private static readonly int s_MoveX = Animator.StringToHash("moveX");
 	private static readonly int s_MoveY = Animator.StringToHash("moveY");
@@ -44,11 +47,21 @@ public class PlayerController : MonoBehaviour
 		}
 
 		animator.SetBool(s_IsMoving, isMoving);
-
 	}
 
 	private void FixedUpdate()
 	{
-		rigidbody2D.MovePosition(rigidbody2D.position + input * moveSpeed * Time.fixedDeltaTime);
+		Vector2 targetPos = rigidbody2D.position + input.normalized * moveSpeed * Time.fixedDeltaTime;
+
+		if (IsWalkable(targetPos))
+		{
+			rigidbody2D.MovePosition(targetPos);
+		}
+	}
+
+	private bool IsWalkable(Vector3 targetPos)
+	{
+		// If there is overlapping, then we don't want to move
+		return !Physics2D.OverlapCircle(targetPos, m_CollisionRadius, solidObjectsLayer);
 	}
 }
